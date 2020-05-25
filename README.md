@@ -1,9 +1,9 @@
 # Human Lung Integrated Cell Atlas
-  Code for the human lung integrated cell atlas generation in Sidarta-Oliveira et al. In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to perform insights into ACE2 cell function. For this, we analyzed each dataset individually with Seurat v3(), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. We provide the complete Seurat object in (), as well as a loom file (), which is less computationally demanding. 
+  Code for the human lung integrated cell atlas generation in Sidarta-Oliveira et al. In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with Seurat v3(), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. We provide the complete Seurat object in (), as well as a loom file (), which is less computationally demanding. 
     ![Human Lung Integrated Cell Atlas](https://github.com/davisidarta/humanlung/blob/master/Lung.png)
 
 
-# Interactive exploration of data with Cerebro
+# Interactive data exploration with Cerebro
   We provide the atlas as a fully interactive Cerebro object at (link_atlas). This atlas can be explored by non-biologists to easily generate publication-level figures from lung gene expression, and also allow for searching cluster marker gene expression and functional annotations from a variey of databases (GO, KEGG, etc) which can be exported as tables (.csv, opens in Excel and other table or text readers). If you have no experience with coding, we suggest you explore the data in the atlas or into a local session of Cerebro, which can be installed here (link_cerebro). One you've installed Cerebro, you can explore the lung atlas data with this (cerebro_file_link) object. 
 
 # Docker 
