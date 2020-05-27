@@ -1,3 +1,7 @@
+[![License: MIT](https://img.shields.io/badge/License-GNU--GLP%20v3.0-green.svg)](https://opensource.org/licenses/MIT)
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/DaviSidarta.svg?label=Follow%20%40DaviSidarta&style=social)](https://twitter.com/DaviSidarta)
+
+
 # Human Lung Integrated Cell Atlas
   Code for the human lung integrated cell atlas generation in Sidarta-Oliveira et al. In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with Seurat v3(), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. We provide the complete Seurat object in (), as well as a loom file (), which is less computationally demanding. 
     ![Human Lung Integrated Cell Atlas](https://github.com/davisidarta/humanlung/blob/master/Lung.png)
