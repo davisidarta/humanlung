@@ -120,7 +120,7 @@ DimPlot(dat, reduction = 'dbmap', group.by = 'Celltypes', pt.size = 0.5)
 DimPlot(dat, reduction = 'dbmap', group.by = 'seurat_clusters', pt.size = 0.5) 
 
 #Check ACE2 expression
-FeaturePlot(dat, reduction = 'dbmap', features = 'ACE2', pt.size = 0.5, min.) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'ACE2', pt.size = 0.5, min.cutoff = 0.2) 
 VlnPlot(dat, features = 'ACE2', group.by = 'Celltypes')
 
 # Save the Seurat file as RDS so that we can use it later
