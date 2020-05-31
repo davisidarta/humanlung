@@ -51,6 +51,10 @@ VlnPlot(object = dat, features = "percent.mt", group.by = 'Time')
 dat <- subset(dat, subset = nFeature_RNA > 600 & nFeature_RNA < 5000 &
                 nCount_RNA > 1800 & nCount_RNA < 35000 &
                 percent.mt < 10)
+#Plot final QC metrics
+VlnPlot(object = dat, features = "nCount_RNA", group.by = 'Donor')
+VlnPlot(object = dat, features = "nFeature_RNA", group.by = 'Donor')
+VlnPlot(object = dat, features = "percent.mt", group.by = 'Donor')
 
 ######################################################################
 #Default workflow, integrate with CCA anchoring and cluster with graph Louvain
