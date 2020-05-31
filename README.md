@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-GNU--GLP%20v3.0-green.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GNU--GLP%20v3.0-green.svg)](https://opensource.org/licenses/GPL-3.0)
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/DaviSidarta.svg?label=Follow%20%40DaviSidarta&style=social)](https://twitter.com/DaviSidarta)
 
 
@@ -35,40 +35,20 @@ sudo -H pip3 install .
 ```
 install.packages('Seurat')
 ```
-## 3- Obtain data
-  As detailed in our Methods section (link_preprint), we obtained data from the following sources:
-  ```
-  # Reyfman et al. data
+## 3- Setup the directories and run the analysis
   
-  # Human Cell Atlas
+  Please clone and extract this repository. From the repository home folder, run:
   
-  # Madissoon et al. data
-  
-  # Travaglini et al. data
-  
-  ```
-  
-  Run each study under the 'Preprocess' directory to analyze all data with a batch-correction of intra-study sample heterogeneity. This usually takes a long time and should be done one study at a time. Be sure to have disk space to store the raw data and the processed Seurat objects.
-  ```
-  R (ver como fazer isso em R)
-  
-  ```
-  
-## 4- Reproduce computations
-  To reproduce data integration and label transfering, run the scripts under the 'process' directory.
-  ```
-  R (ver como fazer isso em R
-  ```
-
-## 5- Reproduce plots
-
-  To generate high-resolution images that reproduce all the plots shown in the manuscript, please run the `plots.R` script.
-
+```  
+  R < Madissoon/Madissoon.R
+  R < Reyfman/Reyfman.R
+  R < HCL/HCL_Lung.R
+  R < Integration.R
+ ```  
+  This reproduces all the results. Alternatively, users can execute these R scripts in the provided order on an R IDE such as RStudio.
+ 
 # Citation
-Sidarta-Oliveira, D. et al. Citation.
-Reyfman et al. citation
-Madissoon et al. citation.
-Human Cell Landscape citation
+Sidarta-Oliveira, D. et al. 
 
 # Troubleshooting
-  For technical issues, please use the 'issues' section of this repository. For more detailed questions, please contact davisidarta@fcm.unicamp.br .
+  For technical issues, please use the 'issues' section of this repository or contact davisidarta@fcm.unicamp.br. 
