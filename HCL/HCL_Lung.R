@@ -12,10 +12,10 @@ library(SeuratWrappers)
 library(tidyverse)
 library(plotly)
 
-setwd("~/Human Cell Landscape") #Change working directory to a dedicated folder
+setwd("~/HCL") #Change working directory to a dedicated folder
 
 download.file('https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE134355&format=file', 
-              destfile = '~/Human Cell Landscape/GSE134355_RAW.tar', method = 'wget')
+              destfile = '~/HCL/GSE134355_RAW.tar', method = 'wget')
 untar(tarfile = 'GSE122960.tar', exdir = "data")
 
 counts1 <- read.table('data/GSM4008628_Adult-Lung1_dge.txt', sep = '\t', row.names = 1, header = T)
