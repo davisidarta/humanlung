@@ -1,21 +1,13 @@
 ######################################################################
 #Integrative analysis of Lung scRNAseq data for the manuscript analyzing possible mechanisms of COVID patogenesis
 ######################################################################
-
 #Load libraries and processed data
 reticulate::use_python('/usr/bin/python3')
 library(reticulate)
 library(Matrix)
 library(Seurat)
-library(SeuratWrappers)
-library(tidyverse)
-library(uwot) # For umap
-library(velocyto.R)
-library(SingleR)
-library(scales)
 library(plotly)
 library(cerebroApp)
-library(batchelor)
 setwd("~/Documents/Bioinfo/Lung")
 
 ######################################################################
@@ -144,7 +136,7 @@ dat <- AddMetaData(dat, metadata = predictions)
 
 
 ######################################################################
-#Embedd with dbMAP
+#Embedd with dbMAP diffusion structure
 ######################################################################
 dbmap <- reticulate::import('dbmap')
 pd <- reticulate::import('pandas')
@@ -163,7 +155,7 @@ plot(evals) #Select meaningful diffusion components. Used 169 (automated).
 res <- dbmap$multiscale$Multiscale(diff)
 db <- as.matrix(res)
 
-#Add to Seurat
+# Add to Seurat. For convenience, the UMAP layout of the diffusion components can be done with Seurat 'RunUMAP()'.
 dat@reductions$db <- dat@reductions$pca
 rownames(db) <- colnames(dat)
 dat@reductions$db@cell.embeddings <- db
@@ -175,31 +167,29 @@ dat$db.cluster <- dat$seurat_clusters
 ######################################################################
 #dbMAP and Adjustment
 ######################################################################
+
+# Run dbMAP by using Seurat UMAP layout on the multiscaled and normalized diffusion components
+
 dat <- RunUMAP(dat, reduction = 'db', dims = 1:(ncol(dat@reductions$db@cell.embeddings)), min.dist = 0.3, spread = 2, learning.rate = 2, reduction.key = 'dbMAP_', reduction.name = 'dbmap')
 
 dat <- RunUMAP(dat, reduction = 'db', n.components = 3, dims = 1:ncol(dat@reductions$db@cell.embeddings), min.dist = 0.3, spread = 2, learning.rate = 2, reduction.key = 'dbMAP3D_', reduction.name = 'dbmap3d', init = 'spectral')
-
-dat <- FindNeighbors(dat, reduction = 'dbmap3d', dims = 1:3, graph.name = 'db3d')
-dat <- FindClusters(dat, resolution = 0.8, graph.name = 'db3d')
-
 
 ######################################################################
 #Plot
 ######################################################################
 
 DimPlot(dat, reduction = 'dbmap', group.by = 'Study', pt.size = 0.5)
-DimPlot(dat, reduction = 'dbmap', group.by = 'predicted.id', pt.size = 0.5)
-DimPlot(dat, reduction = 'dbmap', group.by = 'Celltypes', pt.size = 0.5)
+DimPlot(dat, reduction = 'dbmap', group.by = 'predicted.id', pt.size = 0.5) #Labels predicted from Travaglini et al data
+DimPlot(dat, reduction = 'dbmap', group.by = 'Celltypes', pt.size = 0.5) #Original metadata from Madissoon et al
 DimPlot(dat, reduction = 'dbmap', group.by = 'seurat_clusters', pt.size = 0.5) + DarkTheme() + NoLegend()
 FeaturePlot(dat, reduction = 'dbmap', features = 'ACE2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
-VlnPlot(dat, features = 'ACE2', group.by = 'Celltypes')
 
 plot.data <- FetchData(object = dat, vars = c("dbMAP3D_1", "dbMAP3D_2", "dbMAP3D_3", 
                                               "Donor", 'Time', 'Celltypes', 'seurat_clusters', 
                                               'ACE2', 'KNG1', 'BDKRB2', 'BDKRB1', 'IL6'
 ))
 plot.data$label <- dat$seurat_clusters
-fig <- plot_ly(data = plot.data, 
+plot_ly(data = plot.data, 
         x = ~dbMAP3D_1, y = ~dbMAP3D_2, z = ~dbMAP3D_3, 
         color = ~seurat_clusters, 
         type = "scatter3d", 
@@ -207,30 +197,6 @@ fig <- plot_ly(data = plot.data,
         marker = list(size = 3, width=0.5),
         text=~seurat_clusters,
         hoverinfo="text", plot_bgcolor = 'black') 
-fig <- fig %>% layout(xaxis = list(showgrid=F), yaxys = list(showgrid=F), zxis = list(showgrid=F))
-######################################################################
-#Plot
-######################################################################
-
-
-######################################################################
-#Export to Cerebro
-######################################################################
-dat@assays$integrated@counts <- dat@assays$integrated@data
-dat <- addPercentMtRibo(dat, organism = 'hg', gene_nomenclature = 'name', assay = 'integrated')
-dat <- getMarkerGenes(dat, organism = 'hg', column_sample = 'db.cluster', column_cluster = 'seurat_clusters', assay = 'integrated', min_pct = 0.7)
-dat <- getEnrichedPathways(dat, column_sample = 'db.cluster', column_cluster = 'seurat_clusters',
-                           databases = c('Transcription_Factor_PPIs', 'Chromossome_Location', 'Mouse_Gene_Atlas', 
-                                         'MGI_Mammalian_Phenotype_Level_3', 'MGI_Mammalian_Phenotyoe_Level_4_2019', 'MGI_Mammalian_Phenotype_2017',
-                                         'OMIM_Disease', 'OMIM_Expanded', 'MsigDB_Computational', 'UK_Biobank_GWAS_v1',
-                                         'KEGG_2019_Mouse', 'PheWeb_2019', 'WikiPathways_2019_Mouse', 'GWAS_Catalog_2019',
-                                         'GO_Biological_Process_2018', 'GO_Cellular_Component_2018', 'GO_Molecular_Function_2018',
-                                         'Panther_2016', 'BioCarta_2016', 'Reactome_2016', 'Kegg_2016'))
-cerebro <- exportFromSeurat(dat, file = 'Lung_integrated.crb', experiment_name = 'Healthy Human Lung', organism = 'hg',
-                            column_sample = 'db.cluster', column_cluster = 'seurat_clusters',
-                            column_nUMI = 'nCount_RNA', column_nGene = 'nFeature_RNA', assay = 'integrated')
-launchCerebro(maxFileSize = 500000)
-saveRDS(dat, 'Lung_analyzed.Rds')
 
 ######################################################################
 #Now thatwe've annotated the dataset, lets change cell type labels
@@ -303,93 +269,104 @@ dat@meta.data$seurat_clusters <- plyr::mapvalues(x = dat@meta.data$seurat_cluste
 #Remove doublets
 ######################################################################
 Idents(dat) <- 'seurat_clusters'
-dat <- subset(dat, cells = WhichCells(dat, idents = c('Doublets 1', 'Doublets 2', 'Unassigned1', 'Unassigned2', 'Unassigned3'), invert = T))
+dat <- subset(dat, cells = WhichCells(dat, idents = c('Doublets 1', 'Doublets 2', 'Doublets 3', 'Doublets 4', 'Doublets 5'), invert = T))
+
+# Final dbMAP plot - Figure 2B
 DimPlot(dat, label = T, repel = T, label.size = 6, reduction = 'dbmap')
-DimPlot(dat, label = T, repel = T, label.size = 6, reduction = 'dbmap', group.by = 'predicted.id') + NoLegend()
 
+# Learned cell types from Travaglini et al - Supplementary Figure 2C
+DimPlot(dat, label = T, repel = T, label.size = 6, reduction = 'dbmap', group.by = 'predicted.id') + NoLegend() 
+
+# Learned cell types from Travaglini et al - Supplementary Figure 2D
+DimPlot(dat, label = T, repel = T, label.size = 6, reduction = 'umap')
+
+######################################################################
+# Plots for figures 3, 4, 5 and 6
+######################################################################
+# ACE2
 FeaturePlot(dat, reduction = 'dbmap', features = 'ACE2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'ACE', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'AGT', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'REN', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KNG1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.02, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLKB1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CCL5', pt.size = 0.5, min.cutoff = 0, max.cutoff = 6, order = T) 
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'BDKRB2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'BDKRB1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'TACR1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'TACR2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'NOS3', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-
-FeaturePlot(dat, reduction = 'dbmap', features = 'AKT1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F11', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F12', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'FGG', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'FGA', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'SERPINE1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'TAC2R', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-
-FeaturePlot(dat, reduction = 'dbmap', features = 'EDN1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-
-FeaturePlot(dat, reduction = 'dbmap', features = 'PRCP', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'MME', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'DPP4', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'AGTR1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'EGFR', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'TMPRSS4', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-
+#DimPlots for Figure 3
 FeaturePlot(dat, reduction = 'dbmap', features = 'CTSL', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3.5, order = T) 
 FeaturePlot(dat, reduction = 'dbmap', features = 'TMPRSS2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
 FeaturePlot(dat, reduction = 'dbmap', features = 'TPCN2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
 FeaturePlot(dat, reduction = 'dbmap', features = 'PIKFYVE', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
+#DotPlot for Figure 3
+DotPlot(dat, features = c('ACE2','TMPRSS2','TPCN2','PIKFYVE','CTSL'), scale.by = 'radius', col.min = 0) + RotatedAxis()
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CXCL6', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'ADCY2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'LCN2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'SLPI', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CXCL1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CXCL2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CCL2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CCL4L1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
+#DimPlots for Figure 4
+FeaturePlot(dat, reduction = 'dbmap', features = 'KNG1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.02, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'KLKB1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.1, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'BDKRB2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'ACE', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'BDKRB1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
+#DotPlot for Figure 4
+DotPlot(dat, features = c('KNG1','KLKB1','BDKRB1','ACE','BDKRB2', 'ACE2'), col.min = 0, col.max = 6) + RotatedAxis()
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PBX1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'RPS27A', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'MT-CO2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'COX7C', pt.size = 0.5, min.cutoff = 0, max.cutoff = 5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'GCNT4', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'GALNT5', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KRT18', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KRT7', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PPL', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PTEN', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
+#DimPlots for Figure 5
+FeaturePlot(dat, reduction = 'dbmap', features = 'AGT', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'REN', pt.size = 0.5, min.cutoff = 0, max.cutoff = 1, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'ACE', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'AGTR1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
+#DotPlot for Figure 5
+DotPlot(dat, features = c('ACE2','REN','AGT','ACE', 'AGTR1'), col.min = 0, col.max = 3) + RotatedAxis()
 
+#DimPlots for Figure 6
+FeaturePlot(dat, reduction = 'dbmap', features = 'KLKB1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.1, order = T) 
 FeaturePlot(dat, reduction = 'dbmap', features = 'SERPINE1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PLAU', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'FN1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 4, order = T) 
 FeaturePlot(dat, reduction = 'dbmap', features = 'PLAT', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
+FeaturePlot(dat, reduction = 'dbmap', features = 'FGG', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
+#DotPlot for Figure 6
+DotPlot(dat, features = c('ACE2','PLAT','FGG','SERPINE1', 'KLKB1'), col.min = 0, col.max = 5) + RotatedAxis()
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'TFPI', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'MCFD2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F3', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F13A1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
+######################################################################
+# Marker genes - Supplementary Figures 3, 4 and 5
+######################################################################
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F8', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PROCR', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F13B', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PLAT', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
+markers <- FindAllMarkers(dat, only.pos = TRUE, min.pct = 0.5, logfc.threshold = 0.5, assay = 'integrated')
+write.csv(markers, 'Lung_markers.csv', row.names = T, col.names = T)
+top2 <- markers %>% group_by(cluster) %>% top_n(n = 2, wt = avg_logFC)
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK7', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK10', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.5, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK11', pt.size = 0.5, min.cutoff = 0, max.cutoff = 3, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK5', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.3, order = T) 
+# Heatmap - Supplementary Figure 5
+DoHeatmap(subset(dat, downsample = 100), features = top2$gene, assay = 'integrated', size = 3) + NoLegend()
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK14', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK13', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK12', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.3, order = T) 
+# Dotplot - Supplementary Figure 3
+genes <- top$gene
+DotPlot(dat, features = make.unique(genes), group.by = 'seurat_clusters', scale.by = 'radius') + RotatedAxis() + FontSize(main = 1)
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'KLK15', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'PLG', pt.size = 0.5, min.cutoff = 0, max.cutoff = 0.1, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'SERPINE2', pt.size = 0.5, min.cutoff = 0, max.cutoff = 2, order = T) 
-FeaturePlot(dat, reduction = 'dbmap', features = 'CPN1', pt.size = 0.5, min.cutoff = 0, max.cutoff = 4, order = T) 
+# Gene expression panel - Supplementary Figure 4
+FeaturePlot(dat, reduction = 'dbmap', features = c('SFTPC', 'C1QA', 'FCN1', 'GZMH', 'CLDN5', 
+                                                   'MS4A1', 'IGLC2','LUM', 'TFF3', 'TPSB2'),
+            pt.size = 0.01, min.cutoff = c(rep(0, times = 10)),
+            max.cutoff = c(14, 14, 14, 14 , 14, 14, 14, 14, 14), order = T, ncol = 2, 
+            combine = T) 
 
-FeaturePlot(dat, reduction = 'dbmap', features = 'F5', pt.size = 0.5, min.cutoff = 0, max.cutoff = 4, order = T) 
+######################################################################
+#Export to Cerebro
+######################################################################
+# Let's allow Cerebro to deal with corrected, normalized data
+dat@assays$integrated@counts <- dat@assays$integrated@data
+
+#Add percentage of mitochondrial and ribossomal genes
+dat <- addPercentMtRibo(dat, organism = 'hg', gene_nomenclature = 'name', assay = 'integrated')
+
+#Add marker genes for each cluster and study
+dat <- getMarkerGenes(dat, organism = 'hg', column_sample = 'Study', column_cluster = 'seurat_clusters', assay = 'integrated', min_pct = 0.7)
+
+# Perform functional enrichment analysis for each cluster and sample. We perform a broad look over a series of databases
+dat <- getEnrichedPathways(dat, column_sample = 'db.cluster', column_cluster = 'seurat_clusters',
+                           databases = c('Transcription_Factor_PPIs', 'Chromossome_Location', 'Mouse_Gene_Atlas', 
+                                         'MGI_Mammalian_Phenotype_Level_3', 'MGI_Mammalian_Phenotyoe_Level_4_2019', 'MGI_Mammalian_Phenotype_2017',
+                                         'OMIM_Disease', 'OMIM_Expanded', 'MsigDB_Computational', 'UK_Biobank_GWAS_v1',
+                                         'KEGG_2019_Mouse', 'PheWeb_2019', 'WikiPathways_2019_Mouse', 'GWAS_Catalog_2019',
+                                         'GO_Biological_Process_2018', 'GO_Cellular_Component_2018', 'GO_Molecular_Function_2018',
+                                         'Panther_2016', 'BioCarta_2016', 'Reactome_2016', 'Kegg_2016'))
+
+# Export the cerebro (.crb) file
+cerebro <- exportFromSeurat(dat, file = 'Lung_integrated.crb', experiment_name = 'Healthy Human Lung', organism = 'hg',
+                            column_sample = 'Study', column_cluster = 'seurat_clusters',
+                            column_nUMI = 'nCount_RNA', column_nGene = 'nFeature_RNA', assay = 'integrated')
+# Save the final Seurat object with functional enrichment analysis
+saveRDS(dat, 'Lung_analyzed.Rds')
+launchCerebro(maxFileSize = 500000)
+
