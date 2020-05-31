@@ -134,6 +134,10 @@ sets[[8]] <- subset(sets[[8]], subset = nFeature_RNA > 500 & nFeature_RNA < 1000
                                         nCount_RNA > 1000 & nCount_RNA < 2000 &
                                         percent.mito < 10)
 
+#Plot final QC metrics
+dat <- merge(sets[[1]], list(sets[[2]], sets[[3]], sets[[4]], sets[[5]], sets[[6]], sets[[7]], sets[[8]]))
+VlnPlot(object = dat, features = "nCount_RNA", group.by = 'Sample') + 
+VlnPlot(object = dat, features = "nFeature_RNA", group.by = 'Sample')
 
 ######################################################################
 #Default workflow, integrate with CCA anchoring and cluster with graph Louvain
