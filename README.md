@@ -8,10 +8,10 @@
 
 
 # Interactive data exploration with Cerebro
-  We provide the atlas as a fully interactive Cerebro object at (link_atlas). This atlas can be explored by non-biologists to easily generate publication-level figures from lung gene expression, and also allow for searching cluster marker gene expression and functional annotations from a variey of databases (GO, KEGG, etc) which can be exported as tables (.csv, opens in Excel and other table or text readers). If you have no experience with coding, we suggest you explore the data in the atlas or into a local session of Cerebro, which can be installed here (link_cerebro). One you've installed Cerebro, you can explore the lung atlas data with this (cerebro_file_link) object. 
+  We provide a subset of 10,000 randomly sampled cells from the atlas as an online interactive Cerebro object at https://humanlung.iqm.unicamp.br . This atlas can be explored by non-biologists to easily generate publication-level figures from lung gene expression, and also allow for searching cluster marker gene expression and functional annotations from a variey of databases (GO, KEGG, etc) which can be exported as tables (.csv, opens in Excel and other table or text readers). If you have no experience with coding, we suggest you explore the data in the atlas or into a local session of Cerebro, which can be installed here (link_cerebro). One you've installed Cerebro, you can explore the lung atlas data with this (cerebro_file_link) object. 
 
 # Docker 
-  To make the reviewing and reproduction process easier, we provide a docker image (link_imagem docker) which can be used to reproduce our findings in a high-performance computing cluster in a containerized fashion. This is particularly advised if you do not have rights to install R and python packages in your machine. If you choose to use the docker image, you can skip steps 1 and 2 of the Reproduction Steps.
+  To make the reviewing and reproduction process easier, we provide a docker image which can be used to reproduce our findings in a high-performance computing cluster in a containerized fashion. This is particularly advised if you do not have rights to install R and python packages in your machine. If you choose to use the docker image, you can skip steps 1 and 2 of the Reproduction Steps.
 
 # Reproduction Steps
   Please follow these steps on a high-performance computing cluster, cloud server or server-grade workstation:
