@@ -3,15 +3,22 @@
 
 
 # Human Lung Integrated Cell Atlas
-  Code for the human lung integrated cell atlas generation in Sidarta-Oliveira et al. In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with Seurat v3(), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. We provide the complete Seurat object in (), as well as a loom file (), which is less computationally demanding. 
+  Code for the human lung integrated cell atlas generation in Sidarta-Oliveira et al. In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with [Seurat v3](https://github.com/satijalab/seurat), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. 
     ![Human Lung Integrated Cell Atlas](https://github.com/davisidarta/humanlung/blob/master/Lung.png)
 
 
 # Interactive data exploration with Cerebro
-  We provide a subset of 10,000 randomly sampled cells from the atlas as an online interactive Cerebro object at https://humanlung.iqm.unicamp.br . This atlas can be explored by non-biologists to easily generate publication-level figures from lung gene expression, and also allow for searching cluster marker gene expression and functional annotations from a variey of databases (GO, KEGG, etc) which can be exported as tables (.csv, opens in Excel and other table or text readers). If you have no experience with coding, we suggest you explore the data in the atlas or into a local session of Cerebro, which can be installed here (link_cerebro). One you've installed Cerebro, you can explore the lung atlas data with this (cerebro_file_link) object. 
+  We provide a subset of 10,000 randomly sampled cells from the atlas as an online interactive Cerebro object at https://humanlung.iqm.unicamp.br . This atlas can be explored by non-biologists to easily generate publication-level figures from lung gene expression, and also allow for searching cluster marker gene expression and functional annotations from a variey of databases (GO, KEGG, etc) which can be exported as tables (.csv, opens in Excel and other table or text readers). If you have no experience with coding, we suggest you explore the data in the atlas or into a local session of Cerebro, which can be installed  at https://github.com/romanhaa/Cerebro. One you've installed Cerebro, you can explore the lung atlas data with this [object](https://figshare.com/s/169a53cccfe5b341d1fb) 
 
 # Docker 
-  To make the reviewing and reproduction process easier, we provide a docker image which can be used to reproduce our findings in a high-performance computing cluster in a containerized fashion. This is particularly advised if you do not have rights to install R and python packages in your machine. If you choose to use the docker image, you can skip steps 1 and 2 of the Reproduction Steps.
+  To make the reviewing and reproduction process easier, we provide a docker image which can be used to reproduce our findings in a high-performance computing cluster in a containerized fashion. This is particularly advised if you do not have rights to install R and python packages in your machine. If you choose to use the docker image, you can skip steps 1 and 2 of the Reproduction Steps. If you do not have docker installed, check this [page](https://docs.docker.com/get-docker/).
+  Once docker is installed, run on a terminal:
+  
+  ```
+  docker pull davisidarta/humanlung
+  ```
+  
+  # Get docker image
 
 # Reproduction Steps
   Please follow these steps on a high-performance computing cluster, cloud server or server-grade workstation:
