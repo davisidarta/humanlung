@@ -3,7 +3,7 @@
 
 
 # Human Lung Integrated Cell Atlas
-  Code for the human lung integrated cell atlas generation in Sidarta-Oliveira et al. In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with [Seurat v3](https://github.com/satijalab/seurat), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. 
+  Code for the human lung integrated cell atlas generation in [Sidarta-Oliveira et al](https://www.medrxiv.org/content/10.1101/2020.06.02.20120634v2). In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with [Seurat v3](https://github.com/satijalab/seurat), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. 
     ![Human Lung Integrated Cell Atlas](https://github.com/davisidarta/humanlung/blob/master/Lung.png)
 
 
