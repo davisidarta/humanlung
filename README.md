@@ -3,7 +3,7 @@
 
 
 # Human Lung Integrated Cell Atlas
-  Code for the human lung integrated cell atlas generation in [Sidarta-Oliveira et al](https://www.medrxiv.org/content/10.1101/2020.06.02.20120634v2). In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with [Seurat v3](https://github.com/satijalab/seurat), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. 
+  Code for the human lung integrated cell atlas generation in [Sidarta-Oliveira et al](https://www.nature.com/articles/s41598-020-76488-2). In this work, we performed a meta-analysis of single-cell RNA sequencing of the human lung to achieve insights into ACE2 cellular role in the lung. For this, we analyzed each dataset individually with [Seurat v3](https://github.com/satijalab/seurat), and merged them into an comprehensive integrated dataset that serves as a reference for further single-cell lung studies. 
     ![Human Lung Integrated Cell Atlas](https://github.com/davisidarta/humanlung/blob/master/Lung.png)
 
 
@@ -55,7 +55,7 @@ install.packages('Seurat')
   This reproduces all the results. Alternatively, users can execute these R scripts in the provided order on an R IDE such as RStudio.
  
 # Citation
-Sidarta-Oliveira, D. et al. 
+Sidarta-Oliveira, D., Jara, C.P., Ferruzzi, A.J. et al. SARS-CoV-2 receptor is co-expressed with elements of the kinin–kallikrein, renin–angiotensin and coagulation systems in alveolar cells. Sci Rep 10, 19522 (2020). https://doi.org/10.1038/s41598-020-76488-2
 
 # Troubleshooting
   For technical issues, please use the 'issues' section of this repository or contact davisidarta@fcm.unicamp.br. 
